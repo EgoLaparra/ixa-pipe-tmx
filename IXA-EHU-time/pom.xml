@@ -27,16 +27,6 @@
     	<version>1.1.5</version>
     </dependency>
     <dependency>
-    	<groupId>com.cognitionis</groupId>
-    	<artifactId>tipsem</artifactId>
-    	<version>1.0.0</version>
-    </dependency>
-    <dependency>
-    	<groupId>cc.mallet</groupId>
-    	<artifactId>mallet</artifactId>
-    	<version>2.0.7</version>
-    </dependency>
-    <dependency>
     	<groupId>nz.ac.waikato.cms.weka</groupId>
     	<artifactId>weka-stable</artifactId>
     	<version>3.6.13</version>

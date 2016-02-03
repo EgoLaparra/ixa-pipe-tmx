@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
-import weka.classifiers.functions.LinearRegression;
+import weka.classifiers.functions.Logistic;
 import weka.core.Attribute;
 import weka.core.FastVector;
 import weka.core.Instance;
@@ -22,7 +22,8 @@ import weka.core.SelectedTag;
 import weka.core.converters.ArffSaver;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.StringToWordVector;
-
+import ixa.kaflib.*;
+import ixa.kaflib.KAFDocument.Layer;
 
 public class EventRecognition {
 	// Classes
@@ -30,7 +31,7 @@ public class EventRecognition {
     public static String LABEL_I = "i-event";
     public static String LABEL_0 = "0";
 
-    private LinearRegression classifier;
+    private Logistic classifier;
     private StringToWordVector filter;
     private Instances datasetOriginal;
     private Instances datasetFiltered;
@@ -39,7 +40,7 @@ public class EventRecognition {
     }
 
     public void init() {
-        this.classifier = new LinearRegression();
+        this.classifier = new Logistic();
         //this.classifier.setRidge();
     }
     
@@ -135,7 +136,7 @@ public class EventRecognition {
 	        ObjectInputStream cois;
 			cois = new ObjectInputStream(
 						new FileInputStream(modelPath));
-			classifier = (LinearRegression) cois.readObject();
+			classifier = (Logistic) cois.readObject();
 			cois.close();
 			ObjectInputStream fois = new ObjectInputStream(
 					new FileInputStream(modelPath + ".ftr"));
@@ -160,8 +161,9 @@ public class EventRecognition {
 			
 				// Classify instance and get label
 				int idxEvent = (int) classifier.classifyInstance(instanceFiltered);
-				String Event = datasetOriginal.attribute("CLASE").value(idxEvent);
+				String Event = datasetOriginal.attribute("EVENT").value(idxEvent);
 				inputInstance.label = Event;
+				System.out.println(inputInstance.file + " " + inputInstance.sentid + " " + inputInstance.tokenid + " " + inputInstance.label);
 				}
 			
 			} catch (Exception e) {
@@ -171,10 +173,21 @@ public class EventRecognition {
     }	
     
     
-    private static List<EventRecognitionInstance> createInstancesWithLabel(String eventExtents) {
+    private EventRecognitionInstance getInstance (List<EventRecognitionInstance> instances, String key) {
+     	Iterator<EventRecognitionInstance> instanceIterator = instances.iterator();
+    	while (instanceIterator.hasNext()) {
+    		EventRecognitionInstance instance = instanceIterator.next();
+    		String ikey = instance.file + " " + instance.sentid + " " + instance.tokenid;
+    		if (ikey.equals(key)) {
+    			return instance;
+    		}
+    	}
+    	return null;
+    }
+    
+    private void labelInstances(String eventExtents, List<EventRecognitionInstance> instances) {
     	// Create a list of instances with labels from event-extents file
-    	List<EventRecognitionInstance> instances = new ArrayList<EventRecognitionInstance>();
-
+    	
     	try {
             String previous = "";
         	BufferedReader in = new BufferedReader(new FileReader(eventExtents));
@@ -187,11 +200,11 @@ public class EventRecognition {
             	} else {
             		label = "i-" + fields[3];
             	}
-            	EventRecognitionInstance newinstance = new EventRecognitionInstance(label);
-            	newinstance.file = fields[0];
-            	newinstance.sentid = fields[1];
-            	newinstance.tokenid = fields[2];
-            	instances.add(newinstance);
+            	String key = fields[0] + ".naf " + fields[1] + " " + fields[2];
+            	EventRecognitionInstance instance = getInstance(instances, key);
+            	if (instance != null){
+            		instance.label = label;
+            	}
             	previous = fields[0] + " " + fields[4];
             	line = in.readLine();
             }
@@ -199,17 +212,56 @@ public class EventRecognition {
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
-
-        return instances;
+    }
+    
+    
+    private void getInstancesFromNAF(KAFDocument naf, List<EventRecognitionInstance> instances, String fileName) {
+    	List<Term> terms = naf.getTerms();
+    	Iterator<Term> termIterator = terms.iterator();
+		while (termIterator.hasNext()) {
+			Term term = termIterator.next();
+        	EventRecognitionInstance newinstance = new EventRecognitionInstance();
+        	newinstance.file = fileName;
+        	newinstance.sentid = term.getSent().toString();
+        	Integer tokenIdx = (Integer) naf.getBySent(Layer.TERMS, term.getSent()).indexOf(term);
+        	newinstance.tokenid = tokenIdx.toString(); 
+        	newinstance.lemma = term.getLemma();
+        	instances.add(newinstance);
+		}
+    }
+    
+    
+    private void getInstancesFromDir(String nafDirectory, List<EventRecognitionInstance> instances) {
+    	// Create a list of instances from naf files
+        
+    	try {
+    		File fDir = new File(nafDirectory);
+    		File[] files = fDir.listFiles();
+    		for (int f=0;f<files.length;f++){
+    			KAFDocument naf = KAFDocument.createFromFile(files[f]);
+			  	getInstancesFromNAF(naf, instances, files[f].getName());
+    		}
+    	} catch (IOException e) {
+    		e.printStackTrace();
+		}
     }
     
     
     
-    
 	public static void main(String[] args) {
-		
-		List<EventRecognitionInstance> input = createInstancesWithLabel(args[0]);
-		
+		EventRecognition ev = new EventRecognition();
+		List<EventRecognitionInstance> input = new ArrayList<EventRecognitionInstance>();
+		ev.getInstancesFromDir(args[1], input);
+		ev.labelInstances(args[0], input);
+		try {
+			ev.init();
+			//ev.train(input, args[2]);
+			ev.classify(input, args[2]);
+			//ev.getInstancesFromDir(args[1]);
+			//System.out.println(input.get(0).label);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
     
 }
