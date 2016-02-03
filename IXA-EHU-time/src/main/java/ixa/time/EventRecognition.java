@@ -214,6 +214,7 @@ public class EventRecognition {
         }
     }
     
+
     
     private void getInstancesFromNAF(KAFDocument naf, List<EventRecognitionInstance> instances, String fileName) {
     	List<Term> terms = naf.getTerms();
@@ -226,6 +227,7 @@ public class EventRecognition {
         	Integer tokenIdx = (Integer) naf.getBySent(Layer.TERMS, term.getSent()).indexOf(term);
         	newinstance.tokenid = tokenIdx.toString(); 
         	newinstance.lemma = term.getLemma();
+        	naf.getBySent(Layer.CONSTITUENCY, term.getSent());
         	instances.add(newinstance);
 		}
     }
@@ -239,7 +241,7 @@ public class EventRecognition {
     		File[] files = fDir.listFiles();
     		for (int f=0;f<files.length;f++){
     			KAFDocument naf = KAFDocument.createFromFile(files[f]);
-			  	getInstancesFromNAF(naf, instances, files[f].getName());
+    			getInstancesFromNAF(naf, instances, files[f].getName());
     		}
     	} catch (IOException e) {
     		e.printStackTrace();
@@ -256,7 +258,7 @@ public class EventRecognition {
 		try {
 			ev.init();
 			//ev.train(input, args[2]);
-			ev.classify(input, args[2]);
+//			ev.classify(input, args[2]);
 			//ev.getInstancesFromDir(args[1]);
 			//System.out.println(input.get(0).label);
 		} catch (Exception e) {
