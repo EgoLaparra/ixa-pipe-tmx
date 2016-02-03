@@ -55,6 +55,9 @@ public class EventRecognition {
         FastVector features = new FastVector(2);
         features.addElement(new Attribute("EVENT", clases));
         features.addElement(new Attribute("LEMMA", (FastVector) null));
+        features.addElement(new Attribute("POS", (FastVector) null));
+        features.addElement(new Attribute("PHRASE", (FastVector) null));
+
 
         Instances dataset = new Instances("eventRecognition", features, 100);
         dataset.setClass(dataset.attribute("EVENT"));
@@ -68,6 +71,8 @@ public class EventRecognition {
     	Instance instance = new Instance(datasetOriginal.numAttributes());
     	instance.setDataset(datasetOriginal);
     	instance.setValue(datasetOriginal.attribute("LEMMA"), inputInstance.lemma);
+    	instance.setValue(datasetOriginal.attribute("POS"), inputInstance.pos);
+    	instance.setValue(datasetOriginal.attribute("PHRASE"), inputInstance.phrase);
     	instance.setClassValue(inputInstance.label);
     	
     	return instance;
@@ -87,7 +92,7 @@ public class EventRecognition {
     	// Create the filter
         StringToWordVector tmpFilter = new StringToWordVector();
         tmpFilter.setInputFormat(dataset);
-        int[] idxFeatures = {1}; // Features to be filtered
+        int[] idxFeatures = {1,2,3}; // Features to be filtered
         tmpFilter.setAttributeIndicesArray(idxFeatures);     
         return (tmpFilter);
     }
@@ -221,13 +226,8 @@ public class EventRecognition {
     	Iterator<Term> termIterator = terms.iterator();
 		while (termIterator.hasNext()) {
 			Term term = termIterator.next();
-        	EventRecognitionInstance newinstance = new EventRecognitionInstance();
-        	newinstance.file = fileName;
-        	newinstance.sentid = term.getSent().toString();
-        	Integer tokenIdx = (Integer) naf.getBySent(Layer.TERMS, term.getSent()).indexOf(term);
-        	newinstance.tokenid = tokenIdx.toString(); 
-        	newinstance.lemma = term.getLemma();
-        	naf.getBySent(Layer.CONSTITUENCY, term.getSent());
+        	EventRecognitionInstance newinstance = new EventRecognitionInstance(naf, term, fileName);
+        	newinstance.setFeatures(naf, term);
         	instances.add(newinstance);
 		}
     }
@@ -251,13 +251,15 @@ public class EventRecognition {
     
     
 	public static void main(String[] args) {
+		System.out.println("Training model:");
+		//System.out.println("\tClassifying:");
 		EventRecognition ev = new EventRecognition();
 		List<EventRecognitionInstance> input = new ArrayList<EventRecognitionInstance>();
 		ev.getInstancesFromDir(args[1], input);
 		ev.labelInstances(args[0], input);
 		try {
 			ev.init();
-			//ev.train(input, args[2]);
+			ev.train(input, args[2]);
 //			ev.classify(input, args[2]);
 			//ev.getInstancesFromDir(args[1]);
 			//System.out.println(input.get(0).label);

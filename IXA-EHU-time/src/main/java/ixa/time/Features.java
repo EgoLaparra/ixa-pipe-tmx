@@ -16,35 +16,36 @@ public class Features {
 	public String tense;
 	public String aspect;
 	
-	private void setLemma (Term term) {
-		this.lemma = term.getLemma();
+	protected void setLemma (String lemma) {
+		this.lemma = lemma;
 	}
 	
-	private void setPoS (Term term) {
-		this.pos = term.getPos();
+	protected void setPoS (String pos) {
+		this.pos = pos;
 	}
 	
     private String walkConsituency (Term t, TreeNode node, String label) {
+    	String phrase = null;
     	if (node.isTerminal()) {
     		Terminal term = (Terminal) node;
     		if (term.getSpan().getFirstTarget().getId().equals(t.getId())){
-    			return label;
+    			phrase = label;
     		}
     	}
     	else {
     		NonTerminal nonTerm = (NonTerminal) node;
     		List<TreeNode> children = node.getChildren();
     		Iterator childrenIterator = children.iterator();
-    		while (childrenIterator.hasNext()) {
+    		while (childrenIterator.hasNext() && phrase == null) {
     			TreeNode child = (TreeNode) childrenIterator.next();
-    			walkConsituency(t, child, nonTerm.getLabel());
+    			phrase = walkConsituency(t, child, nonTerm.getLabel());
     		}
     	}
     	
-    	return null;
+    	return phrase;
     }
     
-	private void setPhrase (Term term, List<Annotation> constituency) {
+    protected void setPhrase (Term term, List<Annotation> constituency) {
     	Iterator trees = constituency.iterator();
     	while (trees.hasNext()) {
         	Tree tree = (Tree) trees.next();
