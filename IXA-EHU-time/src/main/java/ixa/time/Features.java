@@ -8,6 +8,7 @@ import ixa.kaflib.KAFDocument.Layer;
 
 public class Features {
 
+	public String label;
 	public String lemma;
 	public String pos;
 	public String phrase;
@@ -15,11 +16,11 @@ public class Features {
 	public String tense;
 	public String aspect;
 	
-	private void Lemma (Term term) {
+	private void setLemma (Term term) {
 		this.lemma = term.getLemma();
 	}
 	
-	private void PoS (Term term) {
+	private void setPoS (Term term) {
 		this.pos = term.getPos();
 	}
 	
@@ -43,7 +44,7 @@ public class Features {
     	return null;
     }
     
-	private void Phrase (Term term, List<Annotation> constituency) {
+	private void setPhrase (Term term, List<Annotation> constituency) {
     	Iterator trees = constituency.iterator();
     	while (trees.hasNext()) {
         	Tree tree = (Tree) trees.next();
@@ -52,15 +53,15 @@ public class Features {
     	}
 	}
 	
-	private void Polarity () {
+	private void setPolarity () {
 		
 	}
 	
-	private void Tense () {
+	private void setTense () {
 		
 	}
 	
-	private void Aspect () {
+	private void setAspect () {
 		
 	}
 }

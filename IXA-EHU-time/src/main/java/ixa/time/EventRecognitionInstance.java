@@ -1,11 +1,11 @@
 package ixa.time;
 
-public class EventRecognitionInstance {
+public class EventRecognitionInstance extends Features {
 	public String file;
 	public String sentid;
 	public String tokenid;
-	public String label;
-	public String lemma;
+/*	public String label;
+	public String lemma;*/
 	
 	public EventRecognitionInstance() {
 		this.label = "0";
