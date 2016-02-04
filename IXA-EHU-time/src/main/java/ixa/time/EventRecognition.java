@@ -168,7 +168,7 @@ public class EventRecognition {
 				int idxEvent = (int) classifier.classifyInstance(instanceFiltered);
 				String Event = datasetOriginal.attribute("EVENT").value(idxEvent);
 				inputInstance.label = Event;
-				System.out.println(inputInstance.file + " " + inputInstance.sentid + " " + inputInstance.tokenid + " " + inputInstance.label);
+				//System.out.println(inputInstance.file + " " + inputInstance.sentid + " " + inputInstance.tokenid + " " + inputInstance.label);
 				}
 			
 			} catch (Exception e) {
@@ -205,7 +205,7 @@ public class EventRecognition {
             	} else {
             		label = "i-" + fields[3];
             	}
-            	String key = fields[0] + ".naf " + fields[1] + " " + fields[2];
+            	String key = fields[0] + fields[1] + " " + fields[2];
             	EventRecognitionInstance instance = getInstance(instances, key);
             	if (instance != null){
             		instance.label = label;
@@ -251,21 +251,25 @@ public class EventRecognition {
     
     
 	public static void main(String[] args) {
-		System.out.println("Training model:");
-		//System.out.println("\tClassifying:");
+		//System.out.println("Training model:");
+		System.out.println("Classifying:");
 		EventRecognition ev = new EventRecognition();
 		List<EventRecognitionInstance> input = new ArrayList<EventRecognitionInstance>();
 		ev.getInstancesFromDir(args[1], input);
 		ev.labelInstances(args[0], input);
 		try {
 			ev.init();
-			ev.train(input, args[2]);
-//			ev.classify(input, args[2]);
+			//ev.train(input, args[2]);
+			ev.classify(input, args[2]);
+			TempEval2 te2 = new TempEval2 ();
+			File outFile = new File(args[3]);
+			te2.printEventExtent(input, outFile);
 			//ev.getInstancesFromDir(args[1]);
 			//System.out.println(input.get(0).label);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		System.out.println("Finish");
 	}
     
 }

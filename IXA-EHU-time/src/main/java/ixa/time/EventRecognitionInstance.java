@@ -16,7 +16,7 @@ public class EventRecognitionInstance extends Features {
 	
 	public EventRecognitionInstance(KAFDocument naf, Term term, String fileName) {
 		this.label = "0";
-		this.file = fileName;
+		this.file = fileName.replace(".naf", "");
     	this.sentid = term.getSent().toString();
     	Integer tokenIdx = (Integer) naf.getBySent(Layer.TERMS, term.getSent()).indexOf(term);
     	this.tokenid = tokenIdx.toString();
