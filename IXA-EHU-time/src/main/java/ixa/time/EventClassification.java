@@ -1,9 +1,9 @@
 package ixa.time;
 
-public class EventRecognition {
+public class EventClassification {
 
 	
-	public EventRecognition() {
+	public EventClassification() {
 		
    	}
     
@@ -18,8 +18,9 @@ public class EventRecognition {
 				System.out.println("\t...loading data");
 				dataset.loadTokensFromTempeval2(args[1] + "/base-segmentation.tab");
 				dataset.loadEventsFromTempeval2(args[1] + "/event-extents.tab");
-				dataset.loadTokenFeaturesFromNAF(args[2]);
-				dataset.createEventRecogCRFTrain();
+				dataset.loadEventAttributesFromTempeval2(args[1] + "/event-attributes.tab");
+				dataset.loadEventFeaturesFromNAF(args[2]);
+				dataset.createEventClassCRFTrain();
 				System.out.println("\t...training model");
 				client.train(dataset.crfX, dataset.crfY, args[3]);
 				
@@ -27,13 +28,14 @@ public class EventRecognition {
 				System.out.println("Classifying:");
 				System.out.println("\t...loading data");
 				dataset.loadTokensFromTempeval2(args[1] + "/base-segmentation.tab");
-				dataset.loadTokenFeaturesFromNAF(args[2]);
-				dataset.createEventRecogCRFTag();
+				dataset.loadEventsFromTempeval2(args[1] + "/event-extents.tab");
+				dataset.loadEventFeaturesFromNAF(args[2]);
+				dataset.createEventClassCRFTag();
 				System.out.println("\t...tagging");
 				dataset.crfY = client.tag(dataset.crfX, args[3]);
-				dataset.newEventExtents();
+				dataset.tagEvents();
 				System.out.println("\t...printing output");
-				dataset.printTempEval2EventExtents(args[4]);
+				dataset.printTempEval2Events(args[4]);
 			}
 				
 		} catch (Exception e) {

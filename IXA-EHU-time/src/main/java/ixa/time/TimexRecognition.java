@@ -1,9 +1,9 @@
 package ixa.time;
 
-public class EventRecognition {
+public class TimexRecognition {
 
 	
-	public EventRecognition() {
+	public TimexRecognition() {
 		
    	}
     
@@ -17,9 +17,9 @@ public class EventRecognition {
 				System.out.println("Training model:");
 				System.out.println("\t...loading data");
 				dataset.loadTokensFromTempeval2(args[1] + "/base-segmentation.tab");
-				dataset.loadEventsFromTempeval2(args[1] + "/event-extents.tab");
+				dataset.loadTimexsFromTempeval2(args[1] + "/timex-extents.tab");
 				dataset.loadTokenFeaturesFromNAF(args[2]);
-				dataset.createEventRecogCRFTrain();
+				dataset.createTimexRecogCRFTrain();
 				System.out.println("\t...training model");
 				client.train(dataset.crfX, dataset.crfY, args[3]);
 				
@@ -28,12 +28,12 @@ public class EventRecognition {
 				System.out.println("\t...loading data");
 				dataset.loadTokensFromTempeval2(args[1] + "/base-segmentation.tab");
 				dataset.loadTokenFeaturesFromNAF(args[2]);
-				dataset.createEventRecogCRFTag();
+				dataset.createTimexRecogCRFTag();
 				System.out.println("\t...tagging");
 				dataset.crfY = client.tag(dataset.crfX, args[3]);
-				dataset.newEventExtents();
+				dataset.newTimexExtents();
 				System.out.println("\t...printing output");
-				dataset.printTempEval2EventExtents(args[4]);
+				dataset.printTempEval2TimexExtents(args[4]);
 			}
 				
 		} catch (Exception e) {
