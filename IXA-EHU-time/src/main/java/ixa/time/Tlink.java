@@ -14,6 +14,8 @@ import ixa.kaflib.KAFDocument.Layer;
 public class Tlink extends Features{
 
 	public String file;
+	public Object from;
+	public Object to;
 	public Event event;
 	public Timex timex;
 	public String category;
@@ -27,9 +29,22 @@ public class Tlink extends Features{
 		this.file = file;
 		this.event = evt;
 		this.timex = tmx;
+		this.from = evt;
+		this.to = tmx;
 		this.inDataset = false;
 	}
 	
+	
+	public Tlink (String file, Timex tmx, Event evt) {
+		
+		this.category = "";
+		this.file = file;
+		this.event = evt;
+		this.timex = tmx;
+		this.from = tmx;
+		this.to = evt;
+		this.inDataset = false;
+	}
 	
 	public void loadFeaturesFromNaf(KAFDocument naf) {
 		
@@ -49,8 +64,8 @@ public class Tlink extends Features{
 			
 	    	this.features.put("eHeadingPrep", getHeadingPreposition(eventPath));
 			this.features.put("tHeadingPrep", getHeadingPreposition(timexPath));
-			this.features.put("synRelation", getSyntacticRelation(eventPath, timexPath));
-			this.features.put("timextype", this.timex.type);
+			//this.features.put("synRelation", getSyntacticRelation(eventPath, timexPath));
+			//this.features.put("timextype", this.timex.type);
 		}
 	}
 

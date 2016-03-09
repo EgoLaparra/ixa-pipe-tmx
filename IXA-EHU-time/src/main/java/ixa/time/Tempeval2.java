@@ -148,10 +148,25 @@ public class Tempeval2 {
             while (line != null) {
             	String[] fields = line.split("\\t");
             	Event event = dataset.getEvent(fields[0], fields[1]);
-            	Timex timex = dataset.getTimex(fields[0], fields[2]);
-            	Tlink tlink = new Tlink (fields[0], event, timex);
-            	tlink.category = fields[3];
-            	dataset.tlinks.add(tlink);
+            	Timex timex = null;
+            	if (event != null) {
+            		timex = dataset.getTimex(fields[0], fields[2]);
+            		if (timex != null) {
+                		Tlink tlink = new Tlink (fields[0], event, timex);
+                		tlink.category = fields[3];
+                		dataset.tlinks.add(tlink);
+            		}
+            	} else {
+            		event = dataset.getEvent(fields[0], fields[2]);
+            		if (event != null) {
+            			timex = dataset.getTimex(fields[0], fields[1]);
+            			if (timex != null) {
+                       		Tlink tlink = new Tlink (fields[0], timex, event);
+                    		tlink.category = fields[3];
+                    		dataset.tlinks.add(tlink);            				
+            			}
+            		}
+            	}
             	line = in.readLine();
             }
             in.close();
@@ -171,9 +186,25 @@ public class Tempeval2 {
 				File nafFile = new File(nafDir + "/" + fields[0] + ".naf");
 				if (nafFile.exists()) {
 	            	Event event = dataset.getEvent(fields[0], fields[1]);
-	            	Timex timex = dataset.getTimex(fields[0], fields[2]);
-	            	Tlink tlink = new Tlink (fields[0], event, timex);
-	            	dataset.tlinks.add(tlink);
+	            	Timex timex = null;
+	            	if (event != null) {
+	            		timex = dataset.getTimex(fields[0], fields[2]);
+	            		if (timex != null) {
+	                		Tlink tlink = new Tlink (fields[0], event, timex);
+	                		tlink.category = fields[3];
+	                		dataset.tlinks.add(tlink);
+	            		}
+	            	} else {
+	            		event = dataset.getEvent(fields[0], fields[2]);
+	            		if (event != null) {
+	            			timex = dataset.getTimex(fields[0], fields[1]);
+	            			if (timex != null) {
+	                       		Tlink tlink = new Tlink (fields[0], timex, event);
+	                    		tlink.category = fields[3];
+	                    		dataset.tlinks.add(tlink);            				
+	            			}
+	            		}
+	            	}
 				}
             	line = in.readLine();
             }
@@ -331,8 +362,13 @@ public class Tempeval2 {
     		while (tlinkIter.hasNext()) {
     			Tlink tlink = tlinkIter.next();	
 				String outTlink = tlink.file;
-				outTlink = outTlink.concat("\t" + tlink.event.id);
-				outTlink = outTlink.concat("\t" + tlink.timex.id);
+				if (tlink.from instanceof Event) {
+					outTlink = outTlink.concat("\t" + tlink.event.id);
+					outTlink = outTlink.concat("\t" + tlink.timex.id);
+				} else {
+					outTlink = outTlink.concat("\t" + tlink.timex.id);
+					outTlink = outTlink.concat("\t" + tlink.event.id);
+				}
 				outTlink = outTlink.concat("\t" + tlink.category);
 				writer.write(outTlink + "\n");
     			}

@@ -237,7 +237,10 @@ public class NAF {
 				}
 				Term termNAF = naf.getSentenceTerms(Integer.parseInt(tlink.event.sentid)).get(tlink.event.headid.idinsent);
 				Predicate predicateNAF = naf.getPredicatesByTerm(termNAF).get(0);
-				naf.newTLink(predicateNAF, timex3NAF, tlink.category);
+				if (tlink.from instanceof Event)
+					naf.newTLink(predicateNAF, timex3NAF, tlink.category);
+				else
+					naf.newTLink(timex3NAF, predicateNAF, tlink.category);
 			}
 		}
 	}
