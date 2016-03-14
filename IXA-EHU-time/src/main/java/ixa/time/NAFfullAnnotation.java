@@ -76,8 +76,8 @@ public class NAFfullAnnotation {
 			}
 			
 			dataset.createUnknownTlinks(naf);
-			dataset.loadTlinkTimexEventFeaturesFromNAF(naf);
-			dataset.createTlinkCategorizationCRFTag();
+			dataset.loadTlinkFeaturesFromNAF(naf);
+			dataset.createTlinkCategorizationCRFTag(Timex.class, Event.class);
 			if (dataset.crfX.size() == 0) {
 				System.out.println("\t...no tlinks categorization candidates!!!");
 			} else {

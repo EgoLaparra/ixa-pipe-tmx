@@ -13,6 +13,27 @@ public class Tempeval2 {
 		
 	}
 	
+
+	public static void loadDCTs(String tempeval2File, Dataset dataset) {
+    	
+    	try {
+        	BufferedReader in = new BufferedReader(new FileReader(tempeval2File));
+        	String line = in.readLine();
+            while (line != null) {
+            	String[] fields = line.split("\\t");
+            	DCT dct = dataset.getDCT(fields[0]);
+            	if (dct == null) {
+            		DCT newDCT = new DCT(fields[0], fields[1]);
+            		dataset.dcts.add(newDCT);
+            	}
+            	line = in.readLine();
+            }
+            in.close();
+        } catch (Exception e) {
+			e.printStackTrace();
+        }    	
+	}
+	
 	
 	public static void loadTokens(String tempeval2File, Dataset dataset) {
     	
@@ -127,7 +148,7 @@ public class Tempeval2 {
             	String[] fields = line.split("\\t");
             	Timex timex = dataset.getTimex(fields[0], fields[4]);
             	if (fields[6].equals("value")) {
-            		timex.value = fields[7];
+            		timex.value = fields[7];            		
             	} else if (fields[6].equals("type")) {
             		timex.type = fields[7];
             	}
@@ -175,6 +196,28 @@ public class Tempeval2 {
         }
 	}
 
+	
+	public static void loadTlinks(String tempeval2File, Dataset dataset) {
+    	
+    	try {
+        	BufferedReader in = new BufferedReader(new FileReader(tempeval2File));
+        	String line = in.readLine();
+            while (line != null) {
+            	String[] fields = line.split("\\t");
+            	Object from = dataset.getEntity(fields[0], fields[1]);
+				Object to = dataset.getEntity(fields[0], fields[2]);
+				if (from != null && to != null) {
+					Tlink tlink = new Tlink (fields[0], from, to);
+            		tlink.category = fields[3];
+            		dataset.tlinks.add(tlink);
+				}
+            	line = in.readLine();
+            }
+            in.close();
+        } catch (Exception e) {
+			e.printStackTrace();
+        }
+	}
 
 	public static void loadUnknownTlinks(String tempeval2File, String nafDir, Dataset dataset) {
     	
@@ -185,26 +228,13 @@ public class Tempeval2 {
             	String[] fields = line.split("\\t");
 				File nafFile = new File(nafDir + "/" + fields[0] + ".naf");
 				if (nafFile.exists()) {
-	            	Event event = dataset.getEvent(fields[0], fields[1]);
-	            	Timex timex = null;
-	            	if (event != null) {
-	            		timex = dataset.getTimex(fields[0], fields[2]);
-	            		if (timex != null) {
-	                		Tlink tlink = new Tlink (fields[0], event, timex);
-	                		tlink.category = fields[3];
-	                		dataset.tlinks.add(tlink);
-	            		}
-	            	} else {
-	            		event = dataset.getEvent(fields[0], fields[2]);
-	            		if (event != null) {
-	            			timex = dataset.getTimex(fields[0], fields[1]);
-	            			if (timex != null) {
-	                       		Tlink tlink = new Tlink (fields[0], timex, event);
-	                    		tlink.category = fields[3];
-	                    		dataset.tlinks.add(tlink);            				
-	            			}
-	            		}
-	            	}
+					Object from = dataset.getEntity(fields[0], fields[1]);
+					Object to = dataset.getEntity(fields[0], fields[2]);
+					if (from != null && to != null) {
+						Tlink tlink = new Tlink (fields[0], from, to);
+                		tlink.category = fields[3];
+                		dataset.tlinks.add(tlink);
+					}
 				}
             	line = in.readLine();
             }
@@ -354,7 +384,7 @@ public class Tempeval2 {
     }
 
 	
-	public static void printTlinks (String fileName, Dataset dataset) {
+	public static void printTlinks (String fileName, Dataset dataset, Class<?> class1, Class<?> class2) {
     	
     	try {
 	    	PrintWriter writer = new PrintWriter(fileName, "UTF-8");
@@ -362,12 +392,29 @@ public class Tempeval2 {
     		while (tlinkIter.hasNext()) {
     			Tlink tlink = tlinkIter.next();	
 				String outTlink = tlink.file;
-				if (tlink.from instanceof Event) {
-					outTlink = outTlink.concat("\t" + tlink.event.id);
-					outTlink = outTlink.concat("\t" + tlink.timex.id);
-				} else {
-					outTlink = outTlink.concat("\t" + tlink.timex.id);
-					outTlink = outTlink.concat("\t" + tlink.event.id);
+				Class<?> fromClass = tlink.from.getClass();
+				Class<?> toClass = tlink.to.getClass();
+				if ((fromClass == class1 && toClass == class2) || (fromClass == class2 && toClass == class1)) {
+					if (fromClass == Event.class) {
+						Event fromEvent = (Event) tlink.from;
+						outTlink = outTlink.concat("\t" + fromEvent.id);
+					} else if (fromClass == Timex.class) {
+						Timex fromTimex = (Timex) tlink.from;
+						outTlink = outTlink.concat("\t" + fromTimex.id);
+					} else if (fromClass == DCT.class) {
+						DCT fromDCT = (DCT) tlink.from;
+						outTlink = outTlink.concat("\t" + fromDCT.id);
+					}
+					if (toClass == Event.class) {
+						Event toEvent = (Event) tlink.to;
+						outTlink = outTlink.concat("\t" + toEvent.id);
+					} else if (toClass == Timex.class) {
+						Timex toTimex = (Timex) tlink.to;
+						outTlink = outTlink.concat("\t" + toTimex.id);
+					} else if (toClass == DCT.class) {
+						DCT toDCT = (DCT) tlink.to;
+						outTlink = outTlink.concat("\t" + toDCT.id);
+					}
 				}
 				outTlink = outTlink.concat("\t" + tlink.category);
 				writer.write(outTlink + "\n");

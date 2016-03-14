@@ -129,7 +129,8 @@ public class NAF {
 		}
 	}
 	
-	public static void loadTlinkTimexEventFeatures(String nafDir, Dataset dataset) {
+	
+	public static void loadTlinkFeatures(String nafDir, Dataset dataset) {
 
 		KAFDocument naf = null;
 		String fileName = "";
@@ -154,9 +155,10 @@ public class NAF {
         }
 
 	}
+
 	
 	
-	public static void loadTlinkTimexEventFeatures(KAFDocument naf, Dataset dataset) {
+	public static void loadTlinkFeatures(KAFDocument naf, Dataset dataset) {
 	
 		Iterator<Tlink> tlinkIter = dataset.tlinks.iterator();
 		while (tlinkIter.hasNext()) {
@@ -204,44 +206,44 @@ public class NAF {
 
 	public static void writeTime(KAFDocument naf, Dataset dataset) {
 		
-		if (dataset.timexs != null) {	
-			Iterator<Timex> timexIter = dataset.timexs.iterator();
-			while(timexIter.hasNext()) {
-				Timex timex = timexIter.next();
-				Timex3 timexNAF = naf.newTimex3(timex.id, timex.type);
-				List<WF> span = new ArrayList<WF>();
-				Iterator<Token> tokenIter = timex.extent.iterator();
-				while(tokenIter.hasNext()) {
-					Token token = tokenIter.next();
-					Iterator<WF> wfIter = naf.getSentenceTerms(Integer.parseInt(token.sentid)).get(token.idinsent).getWFs().iterator();
-					while(wfIter.hasNext()) {
-						WF wf = wfIter.next();
-						span.add(wf);
-					}
-				}
-				timexNAF.setSpan(KAFDocument.newWFSpan(span));
-			}
-		}
-		
-		if (dataset.tlinks != null) {
-			Iterator<Tlink> tlinkIter = dataset.tlinks.iterator();
-			while(tlinkIter.hasNext()) {
-				Tlink tlink = tlinkIter.next();
-				Timex3 timex3NAF = null;
-				Iterator<Timex3> timex3Iter = naf.getTimeExs().iterator();
-				while(timex3Iter.hasNext()) {
-					Timex3 timex3 = timex3Iter.next();
-					if (timex3.getId().equals(tlink.timex.id)) {
-						timex3NAF = timex3;
-					}
-				}
-				Term termNAF = naf.getSentenceTerms(Integer.parseInt(tlink.event.sentid)).get(tlink.event.headid.idinsent);
-				Predicate predicateNAF = naf.getPredicatesByTerm(termNAF).get(0);
-				if (tlink.from instanceof Event)
-					naf.newTLink(predicateNAF, timex3NAF, tlink.category);
-				else
-					naf.newTLink(timex3NAF, predicateNAF, tlink.category);
-			}
-		}
+//		if (dataset.timexs != null) {	
+//			Iterator<Timex> timexIter = dataset.timexs.iterator();
+//			while(timexIter.hasNext()) {
+//				Timex timex = timexIter.next();
+//				Timex3 timexNAF = naf.newTimex3(timex.id, timex.type);
+//				List<WF> span = new ArrayList<WF>();
+//				Iterator<Token> tokenIter = timex.extent.iterator();
+//				while(tokenIter.hasNext()) {
+//					Token token = tokenIter.next();
+//					Iterator<WF> wfIter = naf.getSentenceTerms(Integer.parseInt(token.sentid)).get(token.idinsent).getWFs().iterator();
+//					while(wfIter.hasNext()) {
+//						WF wf = wfIter.next();
+//						span.add(wf);
+//					}
+//				}
+//				timexNAF.setSpan(KAFDocument.newWFSpan(span));
+//			}
+//		}
+//		
+//		if (dataset.tlinks != null) {
+//			Iterator<Tlink> tlinkIter = dataset.tlinks.iterator();
+//			while(tlinkIter.hasNext()) {
+//				Tlink tlink = tlinkIter.next();
+//				Timex3 timex3NAF = null;
+//				Iterator<Timex3> timex3Iter = naf.getTimeExs().iterator();
+//				while(timex3Iter.hasNext()) {
+//					Timex3 timex3 = timex3Iter.next();
+//					if (timex3.getId().equals(tlink.timex.id)) {
+//						timex3NAF = timex3;
+//					}
+//				}
+//				Term termNAF = naf.getSentenceTerms(Integer.parseInt(tlink.event.sentid)).get(tlink.event.headid.idinsent);
+//				Predicate predicateNAF = naf.getPredicatesByTerm(termNAF).get(0);
+//				if (tlink.from instanceof Event)
+//					naf.newTLink(predicateNAF, timex3NAF, tlink.category);
+//				else
+//					naf.newTLink(timex3NAF, predicateNAF, tlink.category);
+//			}
+//		}
 	}
 }

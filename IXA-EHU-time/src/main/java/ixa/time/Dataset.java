@@ -16,6 +16,7 @@ import ixa.kaflib.KAFDocument.Layer;
 
 public class Dataset {
 
+	public List<DCT> dcts;
 	public List<Event> events;
 	public List<Token> tokens;
 	public List<Timex> timexs;
@@ -41,6 +42,19 @@ public class Dataset {
 		return fileList;
 	}
 	
+	
+	public DCT getDCT (String fileName) {
+		
+		DCT dct = null;
+		Iterator<DCT> dctIter = this.dcts.iterator();
+		while (dctIter.hasNext()) {
+			DCT nextDCT = dctIter.next();
+			if (nextDCT.file.equals(fileName)) {
+				dct = nextDCT;
+			}
+		}
+		return dct;
+	}
 	
 	public Token getToken (String fileName, String sid, String tid) {
 		
@@ -127,9 +141,13 @@ public class Dataset {
 
 	public Object getEntity (String fileName, String id) {
 		
-		Object entity = getEvent (fileName, id);
+		Object entity = null;
+		if (id.equals("t0"))
+			entity = getDCT (fileName);
 		if (entity == null)
 			entity = getTimex (fileName, id);
+		if (entity == null)
+			entity = getEvent (fileName, id);
 		
 		return entity;
 	}
@@ -632,73 +650,59 @@ public class Dataset {
     		}
 			return istlink;
 	}
-	
-	public void createTlinkCategorizationCRFTrain () {
+
+	public void createTlinkCategorizationCRFTrain (Class<?> class1, Class<?> class2) {
 		
 		this.crfX = new ArrayList<List<Hashtable<String, String>>>();
 		this.crfY = new ArrayList<List<String>>();
-		String prevFile = "";
-		String prevSent = "";
 		List<Hashtable<String, String>> tlinkListX = new ArrayList<Hashtable<String, String>>();
 		List<String> tlinkListY = new ArrayList<String>();
 
 		Iterator<Tlink> tlinkIter = this.tlinks.iterator();
 		while (tlinkIter.hasNext()) {
 			Tlink tlinkNext = tlinkIter.next();
-			if (!(prevFile.equals(tlinkNext.file) && prevSent.equals(tlinkNext.event.sentid))) {
-				if (tlinkListX.size() > 0) {
+			Class<?> fromClass = tlinkNext.from.getClass(); 
+			Class<?> toClass = tlinkNext.to.getClass(); 
+			if ((fromClass == class1 && toClass == class2) || (fromClass == class2 && toClass == class1)) {
+				if (tlinkNext.features != null && !tlinkNext.category.equals("")) {
+					tlinkNext.inDataset = true;
+					tlinkListX.add(tlinkNext.features);
+					tlinkListY.add(tlinkNext.category);
+					
 					this.crfX.add(tlinkListX);
 					tlinkListX = new ArrayList<Hashtable<String, String>>();
-				}
-				if (tlinkListY.size() > 0) {
+				
 					this.crfY.add(tlinkListY);
 					tlinkListY = new ArrayList<String>();
+
 				}
-				prevFile = tlinkNext.file;
-				prevSent = tlinkNext.event.sentid;
-			}
-			if (tlinkNext.features != null && !tlinkNext.category.equals("")) {
-				tlinkNext.inDataset = true;
-				tlinkListX.add(tlinkNext.features);
-				tlinkListY.add(tlinkNext.category);
+
 			}
 		}
-
-		if (tlinkListX.size() > 0)
-			this.crfX.add(tlinkListX);
-		if (tlinkListY.size() > 0)
-			this.crfY.add(tlinkListY);
 	}
 	
-	
-	public void createTlinkCategorizationCRFTag () {
+	public void createTlinkCategorizationCRFTag (Class<?> class1, Class<?> class2) {
 		
 		this.crfX = new ArrayList<List<Hashtable<String, String>>>();
-		String prevFile = "";
-		String prevSent = "";
 		List<Hashtable<String, String>> tlinkListX = new ArrayList<Hashtable<String, String>>();
 
 		Iterator<Tlink> tlinkIter = this.tlinks.iterator();
 		while (tlinkIter.hasNext()) {
 			Tlink tlinkNext = tlinkIter.next();
-			if (!(prevFile.equals(tlinkNext.file) && prevSent.equals(tlinkNext.event.sentid))) {
-				if (tlinkListX.size() > 0) {
+			Class<?> fromClass = tlinkNext.from.getClass(); 
+			Class<?> toClass = tlinkNext.to.getClass(); 
+			if ((fromClass == class1 && toClass == class2) || (fromClass == class2 && toClass == class1)) {
+				if (tlinkNext.features != null && !tlinkNext.category.equals("")) {
+					tlinkNext.inDataset = true;
+					tlinkListX.add(tlinkNext.features);
+					
 					this.crfX.add(tlinkListX);
+					tlinkListX = new ArrayList<Hashtable<String, String>>();
 				}
-				prevFile = tlinkNext.file;
-				prevSent = tlinkNext.event.sentid;
-				tlinkListX = new ArrayList<Hashtable<String, String>>();
-			}
-
-			if (tlinkNext.features != null) {
-				tlinkNext.inDataset = true;
-				tlinkListX.add(tlinkNext.features);
 			}
 		}
-		if (tlinkListX.size() > 0)
-			this.crfX.add(tlinkListX);
 	}
-	
+		
 	
 	public void tagTlinks () {
 	
@@ -722,6 +726,12 @@ public class Dataset {
 	//  Tempeval2 In&Out
 	//
 	//
+	
+	public void loadDCTsFromTempeval2(String tempeval2File) {
+    	
+		this.dcts = new ArrayList<DCT>();
+		Tempeval2.loadDCTs(tempeval2File, this);
+	}
 	
 	public void loadTokensFromTempeval2(String tempeval2File) {
     	
@@ -751,12 +761,13 @@ public class Dataset {
 		Tempeval2.loadTimexAttributes(tempeval2File, this);
 	}
 	
-	public void loadTlinksTimexEventFromTempeval2(String tempeval2File) {
+
+	public void loadTlinksFromTempeval2(String tempeval2File) {
 		
 		this.tlinks = new ArrayList<Tlink>();
-		Tempeval2.loadTlinksTimexEvent(tempeval2File, this);
+		Tempeval2.loadTlinks(tempeval2File, this);
 	}
-
+	
 	public void loadUnknownTlinksFromTempeval2(String tempeval2File, String nafDir) {
 		
 		this.tlinks = new ArrayList<Tlink>();
@@ -783,9 +794,9 @@ public class Dataset {
 		Tempeval2.printTimexs(outputFile, this);
 	}
 
-	public void printTempEval2Tlinks(String outputFile) {
+	public void printTempEval2Tlinks(String outputFile, Class<?> class1, Class<?> class2) {
     	
-		Tempeval2.printTlinks(outputFile, this);
+		Tempeval2.printTlinks(outputFile, this, class1, class2);
 	}
 	
 	
@@ -826,14 +837,14 @@ public class Dataset {
 		NAF.loadTimexFeatures(naf, this);
 	}
 	
-	public void loadTlinkTimexEventFeaturesFromNAF(String nafDir) {
+	public void loadTlinkFeaturesFromNAF(String nafDir) {
 		
-		NAF.loadTlinkTimexEventFeatures(nafDir, this);
+		NAF.loadTlinkFeatures(nafDir, this);
 	}
 	
-	public void loadTlinkTimexEventFeaturesFromNAF(KAFDocument naf) {
+	public void loadTlinkFeaturesFromNAF(KAFDocument naf) {
 		
-		NAF.loadTlinkTimexEventFeatures(naf, this);
+		NAF.loadTlinkFeatures(naf, this);
 	}
 
 	public void loadNAFDocument(KAFDocument naf) {

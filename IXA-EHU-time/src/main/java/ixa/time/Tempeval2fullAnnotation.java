@@ -15,6 +15,7 @@ public class Tempeval2fullAnnotation {
 		try {
 			System.out.println("Annotating time:");
 			System.out.println("\t...loading data");
+			dataset.loadDCTsFromTempeval2(args[0] + "/dct.tab");
 			dataset.loadTokensFromTempeval2(args[0] + "/base-segmentation.tab");
 			dataset.loadTokenFeaturesFromNAF(args[1]);		
 			
@@ -49,8 +50,8 @@ public class Tempeval2fullAnnotation {
 			dataset.printTempEval2Timexs(args[3] + "/timex-attributes.tab");
 			
 			dataset.createUnknownTlinks(args[1]);
-			dataset.loadTlinkTimexEventFeaturesFromNAF(args[1]);
-			dataset.createTlinkCategorizationCRFTag();
+			dataset.loadTlinkFeaturesFromNAF(args[1]);
+			dataset.createTlinkCategorizationCRFTag(Timex.class, Event.class);
 			if (dataset.crfX.size() == 0) {
 				System.out.println("\t...no tlinks categorization candidates!!!");
 			} else {
@@ -58,7 +59,7 @@ public class Tempeval2fullAnnotation {
 				dataset.crfY = client.tag(dataset.crfX, args[2] + "/tlinks-timex-event");
 				dataset.tagTlinks();
 				System.out.println("\t...printing tlinks");
-				dataset.printTempEval2Tlinks(args[3] + "/tlinks-timex-event.tab");
+				dataset.printTempEval2Tlinks(args[3] + "/tlinks-timex-event.tab", Timex.class, Event.class);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
