@@ -28,6 +28,19 @@ public class Dataset {
 		
 	}
 	
+	public List<String> getFileList () {
+		
+		List<String> fileList = new ArrayList<String>();
+		Iterator<Token> tokenIter = this.tokens.iterator();
+		while (tokenIter.hasNext()) {
+			Token nextToken = tokenIter.next();
+			String fileName = nextToken.file;
+			if (!fileList.contains(fileName))
+				fileList.add(fileName);
+		}
+		return fileList;
+	}
+	
 	
 	public Token getToken (String fileName, String sid, String tid) {
 		
@@ -43,6 +56,20 @@ public class Dataset {
 	}
 	
 
+	public List<Token> getTokenList (String fileName) {
+		
+		List<Token> tokenList = new ArrayList<Token>();
+		Iterator<Token> tokenIter = this.tokens.iterator();
+		while (tokenIter.hasNext()) {
+			Token nextToken = tokenIter.next();
+			if (nextToken.file.equals(fileName)) {
+				tokenList.add(nextToken);
+			}
+		}
+		return tokenList;
+	}
+
+	
 	public Event getEvent (String fileName, String id) {
 		
 		Event event = null;
@@ -56,6 +83,20 @@ public class Dataset {
 		return event;
 	}
 	
+
+	public List<Event> getEventList (String fileName) {
+		
+		List<Event> eventList = new ArrayList<Event>();
+		Iterator<Event> eventIter = this.events.iterator();
+		while (eventIter.hasNext()) {
+			Event nextEvent = eventIter.next();
+			if (nextEvent.file.equals(fileName)) {
+				eventList.add(nextEvent);
+			}
+		}
+		return eventList;
+	}
+
 	
 	public Timex getTimex (String fileName, String id) {
 		
@@ -68,6 +109,42 @@ public class Dataset {
 			}
 		}
 		return timex;
+	}
+	
+	
+	public List<Timex> getTimexList (String fileName) {
+		
+		List<Timex> timexList = new ArrayList<Timex>();
+		Iterator<Timex> timexIter = this.timexs.iterator();
+		while (timexIter.hasNext()) {
+			Timex nextTimex = timexIter.next();
+			if (nextTimex.file.equals(fileName)) {
+				timexList.add(nextTimex);
+			}
+		}
+		return timexList;
+	}
+
+	public Object getEntity (String fileName, String id) {
+		
+		Object entity = getEvent (fileName, id);
+		if (entity == null)
+			entity = getTimex (fileName, id);
+		
+		return entity;
+	}
+	
+	public List<Tlink> getTlinkList (String fileName) {
+		
+		List<Tlink> tlinkList = new ArrayList<Tlink>();
+		Iterator<Tlink> tlinkIter = this.tlinks.iterator();
+		while (tlinkIter.hasNext()) {
+			Tlink nextTlink = tlinkIter.next();
+			if (nextTlink.file.equals(fileName)) {
+				tlinkList.add(nextTlink);
+			}
+		}
+		return tlinkList;
 	}
 	
 	
@@ -272,7 +349,7 @@ public class Dataset {
 				Token token = this.tokens.get(tokenIdx);
 				if (tag.equals("b-timex")) {
 					tIdx++;
-					newTimex = new Timex(token.file, token.sentid, token, "tmx" + tIdx.toString());
+					newTimex = new Timex(token.file, token.sentid, token, "t" + tIdx.toString());
 		    		this.timexs.add(newTimex);
 				} else if (tag.equals("i-timex")) {
 		    		newTimex.addExtent(this.tokens.get(tokenIdx));
@@ -767,6 +844,20 @@ public class Dataset {
 	public void writeTimeInNAF(KAFDocument naf) {
 		
 		NAF.writeTime(naf, this);
+	}
+
+
+	
+	//
+	//
+	//  TimeML In&Out
+	//
+	//
+	
+
+	public void printTimeML(String timeMLDir) {
+		
+		TimeML.print(timeMLDir, this);
 	}
 
 }
