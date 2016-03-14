@@ -857,18 +857,4 @@ public class Dataset {
 		NAF.writeTime(naf, this);
 	}
 
-
-	
-	//
-	//
-	//  TimeML In&Out
-	//
-	//
-	
-
-	public void printTimeML(String timeMLDir) {
-		
-		TimeML.print(timeMLDir, this);
-	}
-
 }
